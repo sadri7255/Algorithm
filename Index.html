@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شبیه ساز آزمون طراحی الگوریتم</title>
+    
+    <!-- MathJax Configuration -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+        };
+    </script>
+    <!-- MathJax for LaTeX rendering -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        /* Google Fonts Import */
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
+
+        /* Root Variables for theming */
+        :root {
+            --primary-bg: #f0f2f5;
+            --container-bg: #ffffff;
+            --text-color: #333;
+            --primary-accent: #4a47a3;
+            --secondary-accent: #706fd3;
+            --correct-color: #2ecc71;
+            --incorrect-color: #e74c3c;
+            --font-family: 'Vazirmatn', sans-serif;
+            --code-bg: #2d2d2d;
+            --code-text: #dcdcdc;
+            --code-keyword: #c586c0;
+            --code-comment: #6a9955;
+            --line-number: #858585;
+        }
+
+        /* General Body Styles */
+        body {
+            font-family: var(--font-family);
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        /* Main Quiz Container */
+        #quiz-container {
+            background-color: var(--container-bg);
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            direction: rtl;
+            text-align: right;
+            border-top: 5px solid var(--primary-accent);
+        }
+
+        /* Header Styles */
+        #quiz-header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary-bg);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        #quiz-header h1 {
+            color: var(--primary-accent);
+            margin-bottom: 10px;
+        }
+
+        /* Progress Bar Styles */
+        #progress-container {
+            width: 100%;
+            background-color: var(--primary-bg);
+            border-radius: 10px;
+            height: 10px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--secondary-accent), var(--primary-accent));
+            border-radius: 10px;
+            transition: width 0.4s ease-in-out;
+        }
+        
+        /* Quiz Body Styles */
+        #quiz-body h2 {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            line-height: 1.7;
+            color: #2c3e50;
+        }
+        
+        /* Hint Button Styles */
+        #hint-btn {
+            background-color: #ffc107;
+            color: #333;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: var(--font-family);
+            font-size: 0.9em;
+            margin-bottom: 25px;
+            transition: background-color 0.3s;
+        }
+
+        #hint-btn:hover {
+            background-color: #ffb300;
+        }
+
+        /* Options Styles */
+        .option {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #ecf0f1;
+            border: 2px solid #bdc3c7;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: right;
+            font-family: var(--font-family);
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+
+        .option:hover:not(.disabled) {
+            border-color: var(--secondary-accent);
+            background-color: #e0e6e8;
+        }
+        
+        .option.correct {
+            background-color: var(--correct-color);
+            border-color: var(--correct-color);
+            color: white;
+            font-weight: bold;
+        }
+
+        .option.incorrect {
+            background-color: var(--incorrect-color);
+            border-color: var(--incorrect-color);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .option.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Code Block Styles */
+        .code-block {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            overflow-x: auto;
+            direction: ltr;
+            text-align: left;
+        }
+        .code-block pre {
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1em;
+        }
+        .code-block .line {
+            display: block;
+            white-space: pre;
+        }
+        .code-block .line-number {
+            color: var(--line-number);
+            display: inline-block;
+            width: 2em;
+            text-align: right;
+            margin-right: 15px;
+            user-select: none;
+        }
+        .code-block .keyword {
+            color: var(--code-keyword);
+            font-weight: bold;
+        }
+        .code-block .comment {
+            color: var(--code-comment);
+        }
+
+        /* Footer Styles */
+        #quiz-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid var(--primary-bg);
+        }
+
+        #next-btn {
+            background: linear-gradient(45deg, var(--secondary-accent), var(--primary-accent));
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-family: var(--font-family);
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        #question-counter {
+            font-size: 1.1em;
+            color: var(--text-color);
+            font-weight: bold;
+        }
+        
+        /* Results Container Styles */
+        #results-container {
+            text-align: center;
+        }
+        
+        #results-container h2 {
+            color: var(--primary-accent);
+            font-size: 2em;
+        }
+
+        #score-text {
+            font-size: 1.3em;
+            margin: 20px 0;
+        }
+        
+        #level-text {
+            color: var(--correct-color);
+            font-weight: bold;
+        }
+        
+        #level-description {
+            color: #555;
+            margin-top: 10px;
+            font-size: 1.1em;
+            max-width: 450px;
+            margin: 15px auto;
+        }
+
+        #restart-btn {
+            background: linear-gradient(45deg, #27ae60, var(--correct-color));
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-family: var(--font-family);
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        /* Utility Classes */
+        .hide {
+            display: none;
+        }
+        
+        /* Hint Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            font-family: var(--font-family);
+            direction: rtl;
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 30px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+            animation: slideIn 0.4s;
+        }
+        
+        .close-btn {
+            color: #aaa;
+            position: absolute;
+            left: 20px;
+            top: 10px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: black;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="quiz-container">
+        <!-- Header: Title and Progress Bar -->
+        <div id="quiz-header">
+            <h1>شبیه‌ساز آزمون نهایی طراحی الگوریتم</h1>
+            <p>دانش خود را در مهم‌ترین مباحث به چالش بکشید!</p>
+            <div id="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Body: Question and Options -->
+        <div id="quiz-body">
+            <h2 id="question">سوال در اینجا نمایش داده می‌شود...</h2>
+            <button id="hint-btn">💡 راهنمایی</button>
+            <div id="options-container">
+                <!-- گزینه‌ها در اینجا با جاوا اسکریپت ساخته می‌شوند -->
+            </div>
+        </div>
+
+        <!-- Footer: Counter and Next Button -->
+        <div id="quiz-footer">
+            <div id="question-counter"></div>
+            <button id="next-btn">سوال بعدی</button>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-container" class="hide">
+            <h2>🎉 آزمون تمام شد! 🎉</h2>
+            <p id="score-text">شما به X از Y سوال پاسخ صحیح دادید.</p>
+            <h3>سطح شما: <span id="level-text"></span></h3>
+            <p id="level-description"></p>
+            <button id="restart-btn">شروع مجدد آزمون</button>
+        </div>
+    </div>
+
+    <!-- Hint Popup (Modal) -->
+    <div id="hint-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>راهنمایی سوال:</h3>
+            <p id="hint-text"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const questions = [
+                {
+                    question: "مسئله‌ای را در نظر بگیرید که پیدا کردن راه‌حل آن بسیار زمان‌بر است، اما اگر یک راه‌حل به ما داده شود، می‌توانیم به سرعت (در زمان چندجمله‌ای) درستی آن را بررسی کنیم. این مسئله به کدام کلاس تعلق دارد؟",
+                    options: [{ text: "P", isCorrect: false }, { text: "NP", isCorrect: true }, { text: "NP-Hard", isCorrect: false }, { text: "Co-NP", isCorrect: false }],
+                    hint: "به تعریف کلاس NP فکر کنید: مسائل غیرقطعی چندجمله‌ای که «تأیید» جواب در آنها سریع است."
+                },
+                {
+                    question: "کدام یک از الگوریتم‌های زیر برای پیدا کردن کوتاه‌ترین مسیر در گرافی که دارای یال با وزن **منفی** است (اما دور منفی ندارد) طراحی شده است؟",
+                    options: [{ text: "الگوریتم پریم", isCorrect: false }, { text: "الگوریتم دایکسترا", isCorrect: false }, { text: "الگوریتم بلمن-فورد", isCorrect: true }, { text: "الگوریتم کروسکال", isCorrect: false }],
+                    hint: "جزوه تفاوت کلیدی بین دایکسترا و بلمن-فورد را در قابلیت پشتیبانی از یال منفی ذکر می‌کند."
+                },
+                {
+                    question: "تفاوت اصلی بین کلاس NP-Complete و NP-Hard چیست؟",
+                    options: [
+                        { text: "مسائل NP-Hard همیشه سخت‌تر از NP-Complete هستند.", isCorrect: false },
+                        { text: "مسائل NP-Complete لزوماً در کلاس NP هستند، اما مسائل NP-Hard ممکن است نباشند.", isCorrect: true },
+                        { text: "مسائل NP-Hard را می‌توان در زمان چندجمله‌ای حل کرد.", isCorrect: false },
+                        { text: "هیچ تفاوت مهمی بین آن‌ها وجود ندارد.", isCorrect: false }
+                    ],
+                    hint: "به یاد بیاورید که یک مسئله برای NP-Complete بودن باید دو شرط داشته باشد: عضو NP باشد و NP-Hard هم باشد. پس NP-Hard بودن شرط لازم اما ناکافی است."
+                },
+                 {
+                    question: "در کدام الگوریتم پیدا کردن درخت پوشای کمینه، یال‌ها ابتدا بر اساس وزن مرتب شده و سپس یکی‌یکی به شرط عدم ایجاد دور به درخت اضافه می‌شوند؟",
+                    options: [
+                        { text: "الگوریتم پریم", isCorrect: false },
+                        { text: "الگوریتم دایکسترا", isCorrect: false },
+                        { text: "الگوریتم کروسکال", isCorrect: true },
+                        { text: "الگوریتم بلمن-فورد", isCorrect: false }
+                    ],
+                    hint: "الگوریتم کروسکال یک «جنگل» از یال‌های مرتب‌شده می‌سازد، در حالی که پریم یک «درخت» را از یک رأس رشد می‌دهد."
+                },
+                {
+                    question: "کدام نماد مجانبی، یک کران بالای **غیر اکید** (upper bound) برای نرخ رشد یک تابع ارائه می‌دهد؟",
+                    options: [{ text: "$\\Theta$ (تتا)", isCorrect: false }, { text: "$\\Omega$ (امگا)", isCorrect: false }, { text: "$o$ (او کوچک)", isCorrect: false }, { text: "$O$ (او بزرگ)", isCorrect: true }],
+                    hint: "O بزرگ می‌گوید تابع ما سریع‌تر از این رشد نمی‌کند (یا مساوی آن رشد می‌کند)، پس یک سقف برای آن تعیین می‌کند."
+                },
+                {
+                    question: "اگر بدانیم پیچیدگی یک الگوریتم $Θ(n^2)$ است، کدام‌یک از گزاره‌های زیر **قطعاً** صحیح است؟",
+                    options: [
+                        { text: "پیچیدگی الگوریتم $O(n^3)$ است ولی $O(n)$ نیست.", isCorrect: true },
+                        { text: "پیچیدگی الگوریتم فقط $O(n^2)$ است.", isCorrect: false },
+                        { text: "پیچیدگی الگوریتم $\\Omega(n^3)$ است.", isCorrect: false },
+                        { text: "پیچیدگی الگوریتم $o(n^2)$ است.", isCorrect: false }
+                    ],
+                    hint: "نماد تتا ($Θ$) یک کران بالا و پایین اکید است. اگر تابعی $Θ(n^2)$ باشد، پس $O(n^2)$ و $Ω(n^2)$ هم هست. همچنین کران بالای آن هر چیزی بالاتر از $n^2$ مثل $n^3$ نیز می‌باشد."
+                },
+                {
+                    question: `پیچیدگی زمانی قطعه کد زیر چیست؟
+                    <div class="code-block"><pre><code><span class="line"><span class="line-number">1</span><span class="keyword">for</span> (i=1 <span class="keyword">to</span> n) {</span><span class="line"><span class="line-number">2</span>  <span class="keyword">for</span> (j=1 <span class="keyword">to</span> i) {</span><span class="line"><span class="line-number">3</span>    <span class="comment">// O(1) operation</span></span><span class="line"><span class="line-number">4</span>  }</span><span class="line"><span class="line-number">5</span>}</span></code></pre></div>`,
+                    options: [{ text: "$Θ(n \\log n)$", isCorrect: false }, { text: "$Θ(n)$", isCorrect: false }, { text: "$Θ(n^3)$", isCorrect: false }, { text: "$Θ(n^2)$", isCorrect: true }],
+                    hint: "تعداد اجرای حلقه داخلی به حلقه خارجی وابسته است. مجموع تعداد تکرارها یک سری حسابی از ۱ تا n است که نتیجه آن از مرتبه $n^2$ می‌باشد."
+                },
+                {
+                    question: `پیچیدگی زمانی قطعه کد زیر چیست؟
+                    <div class="code-block"><pre><code><span class="line"><span class="line-number">1</span>i = 1;</span><span class="line"><span class="line-number">2</span><span class="keyword">while</span> (i < n) {</span><span class="line"><span class="line-number">3</span>  <span class="comment">// O(1) operation</span></span><span class="line"><span class="line-number">4</span>  i = i * 3;</span><span class="line"><span class="line-number">5</span>}</span></code></pre></div>`,
+                    options: [{ text: "$Θ(n)$", isCorrect: false }, { text: "$Θ(\\log n)$", isCorrect: true }, { text: "$Θ(n^2)$", isCorrect: false }, { text: "$Θ(\\sqrt{n})$", isCorrect: false }],
+                    hint: "شمارنده حلقه به صورت نمایی (با ضریب ۳) افزایش می‌یابد، نه خطی. این مشخصه حلقه‌های لگاریتمی است."
+                },
+                {
+                    question: "کدام یک از الگوریتم‌های زیر نمونه‌ی بارزی از رویکرد «حریصانه» (Greedy) **نیست**؟",
+                    options: [
+                        { text: "الگوریتم کروسکال", isCorrect: false },
+                        { text: "الگوریتم پریم", isCorrect: false },
+                        { text: "الگوریتم دایکسترا", isCorrect: false },
+                        { text: "الگوریتم فلوید-وارشال", isCorrect: true }
+                    ],
+                    hint: "الگوریتم‌های حریصانه در هر مرحله بهترین انتخاب محلی را انجام می‌دهند. کروسکال، پریم و دایکسترا همگی این ویژگی را دارند. اما فلوید-وارشال یک رویکرد برنامه‌نویسی پویا است."
+                },
+                 {
+                    question: `پیچیدگی زمانی قطعه کد زیر چیست؟
+                    <div class="code-block"><pre><code><span class="line"><span class="line-number">1</span><span class="keyword">for</span> (i = 1; i <= n; i++) {</span><span class="line"><span class="line-number">2</span>  <span class="keyword">for</span> (j = 1; j <= n; j += i) {</span><span class="line"><span class="line-number">3</span>    <span class="comment">// O(1) operation</span></span><span class="line"><span class="line-number">4</span>  }</span><span class="line"><span class="line-number">5</span>}</span></code></pre></div>`,
+                    options: [{ text: "$O(n^2)$", isCorrect: false }, { text: "$O(n \\log n)$", isCorrect: true }, { text: "$O(n)$", isCorrect: false }, { text: "$O(n^{1.5})$", isCorrect: false }],
+                    hint: "این یک مثال کلاسیک است. مجموع تکرارهای حلقه داخلی به صورت $n/1 + n/2 + n/3 + ... + n/n$ است که برابر با $n$ ضربدر سری هارمونیک ($\\log n$) می‌شود."
+                },
+                 {
+                    question: `پیچیدگی زمانی سه حلقه تودرتو وابسته زیر چیست؟
+                    <div class="code-block"><pre><code><span class="line"><span class="line-number">1</span><span class="keyword">for</span> i=1 <span class="keyword">to</span> n</span><span class="line"><span class="line-number">2</span>  <span class="keyword">for</span> j=1 <span class="keyword">to</span> i</span><span class="line"><span class="line-number">3</span>    <span class="keyword">for</span> k=1 <span class="keyword">to</span> j</span><span class="line"><span class="line-number">4</span>      ...</span></code></pre></div>`,
+                    options: [{ text: "$Θ(n^2)$", isCorrect: false }, { text: "$Θ(n^2 \\log n)$", isCorrect: false }, { text: "$Θ(n^3)$", isCorrect: true }, { text: "$Θ(n \\log n)$", isCorrect: false }],
+                    hint: "هر سطح از حلقه‌های وابسته، معمولاً یک درجه به توان n اضافه می‌کند. این ساختار با سیگماهای تودرتو حل می‌شود که جمله غالب آن $n^3$ است."
+                },
+                {
+                    question: "پیچیدگی زمانی رابطه بازگشتی $T(n) = 2T(n/2) + n$ با استفاده از قضیه مستر (Master Theorem) کدام است؟",
+                    options: [{ text: "$Θ(n)$", isCorrect: false }, { text: "$Θ(n \\log n)$", isCorrect: true }, { text: "$Θ(n^2)$", isCorrect: false }, { text: "$Θ(\\log n)$", isCorrect: false }],
+                    hint: "در این رابطه $a=2, b=2, k=1$. حال باید رابطه بین $a$ و $b^k$ را پیدا کنید. چون $a = b^k$ (یعنی $2 = 2^1$)، این حالت دوم قضیه مستر است."
+                },
+                {
+                    question: "رابطه بازگشتی $T(n) = T(n/3) + n^2$ با کدام حالت از قضیه مستر حل می‌شود و پیچیدگی آن چیست؟",
+                    options: [{ text: "حالت اول، $Θ(n^2)$", isCorrect: false }, { text: "حالت دوم، $Θ(n^2 \\log n)$", isCorrect: false }, { text: "حالت سوم، $Θ(n^2)$", isCorrect: true }, { text: "حالت اول، $Θ(n \\log n)$", isCorrect: false }],
+                    hint: "در اینجا $a=1, b=3, k=2$. چون $1 < 3^2$ است، این مربوط به حالت سوم قضیه مستر است و پیچیدگی برابر با $Θ(n^k)$ یعنی $Θ(n^2)$ می‌شود."
+                },
+                {
+                    question: "پیچیدگی زمانی رابطه بازگشتی $T(n) = 9T(n/3) + n$ کدام است؟",
+                    options: [{ text: "$Θ(n^2)$", isCorrect: true }, { text: "$Θ(n \\log n)$", isCorrect: false }, { text: "$Θ(n)$", isCorrect: false }, { text: "$Θ(n^3)$", isCorrect: false }],
+                    hint: "مقادیر $a=9, b=3, k=1$ را در نظر بگیرید. چون $a > b^k$ (یعنی $9 > 3^1$)، این حالت اول قضیه مستر است. پیچیدگی از مرتبه $n^{\\log_b a}$ خواهد بود."
+                },
+                {
+                    question: "رابطه بازگشتی $T(n) = T(n-1) + n$ را در نظر بگیرید. پیچیدگی زمانی آن چیست؟ (توجه: قضیه مستر قابل استفاده نیست)",
+                    options: [ { text: "$Θ(n)$", isCorrect: false }, { text: "$Θ(n \\log n)$", isCorrect: false }, { text: "$Θ(n^2)$", isCorrect: true }, { text: "$Θ(2^n)$", isCorrect: false } ],
+                    hint: "این رابطه را باز کنید: $T(n) = (T(n-2) + n-1) + n = ... = 1+2+3+...+n$. این یک سری حسابی است."
+                },
+                {
+                    question: "کدام یک از مفاهیم زیر، سخت‌ترین مسائل در کلاس NP را توصیف می‌کند، به طوری که اگر یکی از آنها در زمان چندجمله‌ای حل شود، آنگاه $P=NP$ خواهد بود؟",
+                    options: [{ text: "NP-Hard", isCorrect: false }, { text: "P", isCorrect: false }, { text: "NP-Complete", isCorrect: true }, { text: "Co-NP", isCorrect: false }],
+                    hint: "این تعریف دقیق کلاس NP-Complete است. آنها هم در NP هستند و هم تمام مسائل دیگر NP به آنها قابل کاهش‌اند."
+                },
+                {
+                    question: "پیچیدگی زمانی الگوریتم فلوید-وارشال برای پیدا کردن کوتاه‌ترین مسیر بین تمام زوج رأس‌ها در یک گراف چیست؟",
+                    options: [{ text: "$O(n^2)$", isCorrect: false }, { text: "$O(E \\log V)$", isCorrect: false }, { text: "$O(n^3)$", isCorrect: true }, { text: "$O(V + E)$", isCorrect: false }],
+                    hint: "این الگوریتم از سه حلقه تودرتو برای بررسی تمام مسیرهای ممکن استفاده می‌کند."
+                },
+                {
+                    question: "در تحلیل مجانبی، کدام یک از توابع زیر سریع‌ترین نرخ رشد (پرهزینه‌ترین) را دارد؟",
+                    options: [{ text: "$n!$", isCorrect: false }, { text: "$2^n$", isCorrect: false }, { text: "$n^3$", isCorrect: false }, { text: "$n^n$", isCorrect: true }],
+                    hint: "به ترتیب رشد توابع که در جزوه آمده نگاه کنید. $n^n$ شدیدترین رشد ممکن را دارد."
+                },
+                {
+                    question: "مقدار تابع  $log^*(65536)$ (لاگ استار) چقدر است؟",
+                    options: [{ text: "3", isCorrect: false }, { text: "4", isCorrect: true }, { text: "5", isCorrect: false }, { text: "16", isCorrect: false }],
+                    hint: "$\\log_2(65536) = 16$, سپس $\\log_2(16) = 4$, سپس $\\log_2(4) = 2$, و در نهایت $\\log_2(2) = 1$. تعداد مراحل لگاریتم گرفتن را بشمارید."
+                },
+                {
+                    question: "اگر برای حل یک مسئله الگوریتمی با پیچیدگی $O(n!)$ داشته باشیم، این الگوریتم برای ورودی‌های بزرگ چگونه عمل می‌کند؟",
+                    options: [{ text: "بسیار سریع و کارآمد است.", isCorrect: false }, { text: "سرعت قابل قبولی دارد.", isCorrect: false }, { text: "بسیار کند و عملاً غیرقابل استفاده است.", isCorrect: true }, { text: "سرعت آن خطی است.", isCorrect: false }],
+                    hint: "پیچیدگی فاکتوریلی یکی از بدترین حالت‌های رشد است و فقط برای مقادیر بسیار کوچک n قابل اجراست."
+                },
+                {
+                    question: "مسئله «تاتولوژی» (Tautology) که در آن بررسی می‌شود آیا یک فرمول منطقی همیشه TRUE است، نمونه‌ای کلاسیک از کدام کلاس پیچیدگی است؟",
+                    options: [{ text: "P", isCorrect: false }, { text: "NP", isCorrect: false }, { text: "Co-NP", isCorrect: true }, { text: "NP-Hard", isCorrect: false }],
+                    hint: "در این مسئله، ارائه یک مثال نقض (یک حالتی که فرمول FALSE شود) برای رد کردن ادعا کافی است. بررسی «نادرستی» یک جواب در این کلاس سریع است."
+                },
+                {
+                    question: "کدام گزینه ترتیب نرخ رشد را به درستی از کندترین به سریع‌ترین نشان می‌دهد؟",
+                    options: [
+                        { text: "$O(\\log n) < O(n) < O(\\sqrt{n})$", isCorrect: false },
+                        { text: "$O(n) < O(\\log n) < O(n^2)$", isCorrect: false },
+                        { text: "$O(\\log n) < O(\\sqrt{n}) < O(n)$", isCorrect: true },
+                        { text: "$O(n^2) < O(n \\log n) < O(2^n)$", isCorrect: false }
+                    ],
+                    hint: "به یاد داشته باشید که توابع لگاریتمی بسیار کند رشد می‌کنند، سپس ریشه‌ها، سپس توابع خطی و بعد از آن خطی-لگاریتمی و چندجمله‌ای‌ها."
+                },
+                {
+                    question: "در یک گراف متراکم (Dense Graph) که تعداد یال‌ها $E$ نزدیک به $V^2$ است، کدام الگوریتم برای یافتن درخت پوشای کمینه معمولاً کارآمدتر است؟",
+                    options: [
+                        { text: "الگوریتم پریم با پیچیدگی $O(V^2)$", isCorrect: true },
+                        { text: "الگوریتم کروسکال با پیچیدگی $O(E \\log E)$", isCorrect: false },
+                        { text: "هر دو عملکرد یکسانی دارند", isCorrect: false },
+                        { text: "الگوریتم بلمن-فورد", isCorrect: false }
+                    ],
+                    hint: "برای گراف متراکم، $E \\approx V^2$. پس پیچیدگی کروسکال تقریباً $O(V^2 \\log V^2)$ می‌شود که کندتر از $O(V^2)$ پریم است."
+                },
+                {
+                    question: "مقدار مجموع $\\sum_{k=1}^{n} k^2$ از چه مرتبه‌ای است؟",
+                    options: [
+                        { text: "$Θ(n)$", isCorrect: false },
+                        { text: "$Θ(n^2)$", isCorrect: false },
+                        { text: "$Θ(n^3)$", isCorrect: true },
+                        { text: "$Θ(n^4)$", isCorrect: false }
+                    ],
+                    hint: "فرمول بسته این مجموع شامل جمله $n(n+1)(2n+1)$ است که بزرگترین توان آن $n^3$ می‌باشد."
+                },
+                {
+                    question: "کدام الگوریتم مسیریابی قابلیت تشخیص «دور منفی» (Negative Cycle) در گراف را دارد؟",
+                    options: [
+                        { text: "دایکسترا", isCorrect: false },
+                        { text: "پریم", isCorrect: false },
+                        { text: "کروسکال", isCorrect: false },
+                        { text: "بلمن-فورد", isCorrect: true }
+                    ],
+                    hint: "الگوریتم بلمن-فورد پس از V-1 مرحله، یک مرحله اضافی برای بررسی وجود دور منفی انجام می‌دهد."
+                },
+                 {
+                    question: "پیچیدگی حافظه (Space Complexity) یک الگوریتم بازگشتی که عمق بازگشت آن $n$ است، معمولاً از چه مرتبه‌ای است؟",
+                    options: [
+                        { text: "$O(1)$", isCorrect: false },
+                        { text: "$O(n)$", isCorrect: true },
+                        { text: "$O(n^2)$", isCorrect: false },
+                        { text: "$O(\\log n)$", isCorrect: false }
+                    ],
+                    hint: "هر فراخوانی بازگشتی یک فریم به پشته (stack) فراخوانی اضافه می‌کند. اگر عمق بازگشت $n$ باشد، پشته تا عمق $n$ رشد می‌کند."
+                }
+            ];
+
+            const questionEl = document.getElementById('question');
+            const optionsContainerEl = document.getElementById('options-container');
+            const nextBtn = document.getElementById('next-btn');
+            const quizBodyEl = document.getElementById('quiz-body');
+            const quizFooterEl = document.getElementById('quiz-footer');
+            const quizHeaderEl = document.getElementById('quiz-header');
+            const resultsContainerEl = document.getElementById('results-container');
+            const scoreTextEl = document.getElementById('score-text');
+            const levelTextEl = document.getElementById('level-text');
+            const levelDescriptionEl = document.getElementById('level-description');
+            const restartBtn = document.getElementById('restart-btn');
+            const questionCounterEl = document.getElementById('question-counter');
+            const progressBar = document.getElementById('progress-bar');
+            
+            const hintBtn = document.getElementById('hint-btn');
+            const hintModal = document.getElementById('hint-modal');
+            const hintTextEl = document.getElementById('hint-text');
+            const closeBtn = document.querySelector('.close-btn');
+
+            let currentQuestionIndex = 0;
+            let score = 0;
+
+            function startQuiz() {
+                // Shuffle questions for variety each time
+                questions.sort(() => Math.random() - 0.5);
+                currentQuestionIndex = 0;
+                score = 0;
+                nextBtn.innerHTML = "سوال بعدی";
+                resultsContainerEl.classList.add('hide');
+                quizBodyEl.classList.remove('hide');
+                quizFooterEl.classList.remove('hide');
+                quizHeaderEl.style.display = 'block';
+                showQuestion();
+            }
+
+            function showQuestion() {
+                resetState();
+                let currentQuestion = questions[currentQuestionIndex];
+                let questionNo = currentQuestionIndex + 1;
+                
+                questionEl.innerHTML = `<b>سوال ${questionNo}: </b>` + currentQuestion.question;
+                questionCounterEl.innerHTML = `${questionNo} / ${questions.length}`;
+                progressBar.style.width = `${(questionNo / questions.length) * 100}%`;
+                
+                hintTextEl.innerHTML = currentQuestion.hint;
+
+                currentQuestion.options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.innerHTML = option.text;
+                    button.classList.add('option');
+                    optionsContainerEl.appendChild(button);
+                    if (option.isCorrect) {
+                        button.dataset.correct = "true";
+                    }
+                    button.addEventListener('click', selectAnswer);
+                });
+                
+                // Rerender all math content on the page after new elements are added
+                if (window.MathJax && typeof window.MathJax.typeset === 'function') {
+                    window.MathJax.typeset();
+                }
+            }
+
+            function resetState() {
+                nextBtn.classList.add('hide');
+                while(optionsContainerEl.firstChild) {
+                    optionsContainerEl.removeChild(optionsContainerEl.firstChild);
+                }
+            }
+
+            function selectAnswer(e) {
+                const selectedBtn = e.target.closest('.option'); // Ensure we get the button
+                if (!selectedBtn || selectedBtn.classList.contains('disabled')) return;
+                
+                const isCorrect = selectedBtn.dataset.correct === "true";
+                if (isCorrect) {
+                    selectedBtn.classList.add('correct');
+                    score++;
+                } else {
+                    selectedBtn.classList.add('incorrect');
+                }
+
+                Array.from(optionsContainerEl.children).forEach(button => {
+                    if (button.dataset.correct === "true") {
+                        button.classList.add('correct');
+                    }
+                    button.classList.add('disabled');
+                });
+                nextBtn.classList.remove('hide');
+            }
+            
+            function showScore() {
+                resetState();
+                quizBodyEl.classList.add('hide');
+                quizFooterEl.classList.add('hide');
+                quizHeaderEl.style.display = 'none';
+                resultsContainerEl.classList.remove('hide');
+                scoreTextEl.textContent = `شما به ${score} سوال از ${questions.length} سوال پاسخ صحیح دادید.`;
+                
+                const percentage = (score / questions.length) * 100;
+                let level = '';
+                let description = '';
+                
+                if (percentage < 40) {
+                    level = 'مبتدی 🧑‍🎓';
+                    description = 'به نظر می‌رسد نیاز به مرور بیشتری روی مفاهیم پایه دارید. جزوه را دوباره بخوانید!';
+                } else if (percentage < 70) {
+                    level = 'متوسط 🤓';
+                    description = 'عملکرد خوبی داشتید! با کمی تمرین بیشتر می‌توانید به سطح پیشرفته برسید.';
+                } else if (percentage < 90) {
+                    level = 'پیشرفته 🚀';
+                    description = 'عالی بود! شما تسلط خوبی بر مباحث دارید و آماده‌ی چالش‌های سخت‌تر هستید.';
+                } else {
+                    level = 'استاد الگوریتم 👑';
+                    description = 'فوق‌العاده است! شما به طور کامل بر مباحث مسلط هستید. آفرین!';
+                }
+                
+                levelTextEl.innerHTML = level;
+                levelDescriptionEl.textContent = description;
+            }
+
+            function handleNextButton() {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < questions.length) {
+                    showQuestion();
+                } else {
+                    showScore();
+                }
+            }
+
+            nextBtn.addEventListener('click', () => {
+                if (currentQuestionIndex < questions.length) {
+                    handleNextButton();
+                } else {
+                    startQuiz();
+                }
+            });
+            
+            restartBtn.addEventListener('click', startQuiz);
+            
+            hintBtn.onclick = function() {
+                hintModal.style.display = "block";
+            }
+            closeBtn.onclick = function() {
+                hintModal.style.display = "none";
+            }
+            window.onclick = function(event) {
+                if (event.target == hintModal) {
+                    hintModal.style.display = "none";
+                }
+            }
+
+            startQuiz();
+        });
+    </script>
+</body>
+</html>
